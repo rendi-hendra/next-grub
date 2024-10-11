@@ -13,12 +13,12 @@ import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
-import { api } from "@/lib/api";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Cookies from "js-cookie";
+// import Cookies from "js-cookie";
 import { LoginFormSchema, loginFormSchema } from "@/lib/formSchema";
-import { toast } from "sonner";
+// import { toast } from "sonner";
+import { signIn } from "next-auth/react";
 
 export default function Login() {
   const [error, setError] = useState<string>("");
@@ -30,32 +30,28 @@ export default function Login() {
     resolver: zodResolver(loginFormSchema),
   });
 
-  const { handleSubmit, control } = form;
+  // const { handleSubmit, control } = form;
 
-  const onSubmit = handleSubmit((value) => {
+  const onSubmit = async (data: LoginFormSchema) => {
     setIsLoading(true);
-    api
-      .post("/users/login", {
-        username: value.username,
-        password: value.password,
-      })
-      .then((response) => {
-        const token = response.data.data.token;
-        Cookies.set("token", token);
-        router.replace("/dashboard", { scroll: false });
-        setIsLoading(false);
-        toast.success("Login successfully", {
-          duration: 5000,
-        });
-      })
-      .catch((error) => {
-        setIsLoading(false);
-        toast.error("Login failed", {
-          duration: 5000,
-        });
-        setError(error.response.data.errors);
-      });
-  });
+    const response = await signIn("credentials", {
+      redirect: false,
+      ...data,
+    });
+
+    const errors = response?.code as string;
+
+    if (errors) {
+      setIsLoading(true);
+      form.setValue("username", "");
+      form.setValue("password", "");
+      setError(errors);
+      setIsLoading(false);
+    }
+
+    setIsLoading(false);
+    router.replace("/dashboard");
+  };
 
   return (
     <main>
@@ -70,9 +66,12 @@ export default function Login() {
                 Join to Our Community with all time access and free
               </h1>
               <Form {...form}>
-                <form onSubmit={onSubmit} className="space-y-4">
+                <form
+                  onSubmit={form.handleSubmit(onSubmit)}
+                  className="space-y-4"
+                >
                   <FormField
-                    control={control}
+                    control={form.control}
                     name="username"
                     render={({ field }) => (
                       <FormItem>
@@ -85,7 +84,7 @@ export default function Login() {
                     )}
                   />
                   <FormField
-                    control={control}
+                    control={form.control}
                     name="password"
                     render={({ field }) => (
                       <FormItem>

@@ -1,56 +1,78 @@
-import NextAuth from "next-auth";
-import Credentials from "next-auth/providers/credentials";
 import axios from "axios";
+import NextAuth, { CredentialsSignin } from "next-auth";
+import Credentials from "next-auth/providers/credentials";
+
+class InvalidLoginError extends CredentialsSignin {
+  constructor(error: string = "Invalid login") {
+    super();
+    this.code = error;
+  }
+}
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  session: { strategy: "jwt" },
   pages: {
     signIn: "/login",
   },
   providers: [
     Credentials({
-      // You can specify which fields should be submitted, by adding keys to the `credentials` object.
-      // e.g. domain, username, password, 2FA token, etc.
       credentials: {
-        username: { label: "username" },
-        password: { label: "password" },
+        username: {},
+        password: {},
       },
       authorize: async (credentials) => {
         let user = null;
 
-        // logic to salt and hash password
-        // const pwHash = saltAndHashPassword(credentials.password)
-
-        // logic to verify if the user exists
-        // user = await getUserFromDb(credentials.email, pwHash)
-
         try {
-          const response = await axios.post("/users/login", {
-            username: credentials?.username,
-            password: credentials?.password,
-          });
+          const response = await axios.post(
+            "http://localhost:8080/api/users/login",
+            {
+              username: credentials?.username,
+              password: credentials?.password,
+            }
+          );
+
           user = response.data.data;
-        } catch (error) {
-          console.log(error);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } catch (error: any) {
+          const errors = await error?.response?.data?.errors;
+          throw new InvalidLoginError(errors);
         }
 
-        // api
-        //   .post("/users/login", {
-        //     username: credentials?.username,
-        //     password: credentials?.password,
-        //   })
-        //   .then((response) => {
-        //     user = response.data.data;
-        //   });
-
-        if (!user) {
-          // No user found, so this is their first attempt to login
-          // meaning this is also the place you could do registration
-          throw new Error("User not found.");
-        }
-
-        // return user object with their profile data
         return user;
       },
     }),
   ],
+  callbacks: {
+    jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+      }
+
+      return token;
+    },
+    session({ session, token }) {
+      session.user.id = token.id as string;
+      return session;
+    },
+
+    authorized({ auth, request: { nextUrl } }) {
+      const isLogin = !!auth?.user;
+      const protectedRoutes = ["/dashboard"];
+
+      if (!isLogin && protectedRoutes.includes(nextUrl.pathname)) {
+        return Response.redirect(new URL("/login", nextUrl));
+      }
+
+      if (isLogin && nextUrl.pathname.startsWith("/login")) {
+        return Response.redirect(new URL("/dashboard", nextUrl));
+      }
+
+      if (isLogin && nextUrl.pathname.startsWith("/register")) {
+        return Response.redirect(new URL("/dashboard", nextUrl));
+      }
+
+      return true;
+    },
+  },
 });
