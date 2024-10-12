@@ -41,16 +41,14 @@ export default function Login() {
 
     const errors = response?.code as string;
 
-    if (errors) {
+    if (!errors) {
       setIsLoading(true);
-      form.setValue("username", "");
-      form.setValue("password", "");
-      setError(errors);
+      router.replace("/dashboard");
       setIsLoading(false);
     }
 
+    setError(errors);
     setIsLoading(false);
-    router.replace("/dashboard");
   };
 
   return (

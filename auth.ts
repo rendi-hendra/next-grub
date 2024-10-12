@@ -44,18 +44,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     }),
   ],
   callbacks: {
-    jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
-      }
-
-      return token;
-    },
-    session({ session, token }) {
-      session.user.id = token.id as string;
-      return session;
-    },
-
     authorized({ auth, request: { nextUrl } }) {
       const isLogin = !!auth?.user;
       const protectedRoutes = ["/dashboard"];
@@ -73,6 +61,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
 
       return true;
+    },
+
+    jwt({ token, user }) {
+      if (user) token.token = user.token;
+      return token;
+    },
+
+    session({ session, token }) {
+      session.user.id = token.sub;
+      session.user.token = token.token;
+      return session;
     },
   },
 });
