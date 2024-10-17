@@ -75,7 +75,7 @@ export default function Login() {
                       <FormItem>
                         <FormLabel>Username</FormLabel>
                         <FormControl>
-                          <Input type="text" {...field} />
+                          <Input type="text" {...field} defaultValue={" "} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>

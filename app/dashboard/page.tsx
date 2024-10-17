@@ -14,19 +14,19 @@ interface Grub {
   total_users: number;
 }
 
-interface Member {
-  id: number;
-  grub_id: string;
-  name: string;
-  total_users: number;
-  users?: [
-    {
-      id: number;
-      name: string;
-      role: string;
-    }
-  ];
-}
+// interface Member {
+//   id: number;
+//   grub_id: string;
+//   name: string;
+//   total_users: number;
+//   users?: [
+//     {
+//       id: number;
+//       name: string;
+//       role: string;
+//     }
+//   ];
+// }
 
 export default function Dashboard() {
   const {
@@ -38,7 +38,6 @@ export default function Dashboard() {
     fetchGrub,
     sayHello,
     getAllMembers,
-    members,
   } = useStore();
   // const { data: session } = useSession();
 
@@ -54,12 +53,20 @@ export default function Dashboard() {
         <p>
           Count: {count} hello: {hello}
         </p>
-        {/* <p className="my-5">{JSON.stringify(data)}</p>
-        <p className="my-5">{JSON.stringify(session)}</p> */}
-        <p className="my-5">
+        <Button onClick={increase} className="my-5">
+          Increase
+        </Button>
+        <Button className="mx-5" onClick={decrease}>
+          Decrease
+        </Button>
+        <Button onClick={sayHello}>Hello</Button>
+        <p className="my-5 flex justify-center">
           {data.map((item: Grub) => {
             return (
-              <div key={item.id}>
+              <div
+                key={item.id}
+                className="border border-solid border-black p-10 mx-5 text-left rounded-lg"
+              >
                 <p>Grub ID: {item.grub_id}</p>
                 <p>Name: {item.name}</p>
                 <p>Total Users: {item.total_users}</p>
@@ -67,38 +74,13 @@ export default function Dashboard() {
             );
           })}
         </p>
-        <Button onClick={increase}>Increase</Button>
-        <Button className="mx-5" onClick={decrease}>
-          Decrease
-        </Button>
-        <Button onClick={sayHello}>Hello</Button>
         <h1 className="mt-10">
           {/* Dashboard {session?.user.name} {session.user.id} count: {count} */}
         </h1>
         {/* <p>{JSON.stringify(session)}</p> */}
         <Input className="w-96 m-auto my-10" />
-        <div>
-          {members.map((member: Member) => {
-            return (
-              <div key={member.id}>
-                <p>Grub ID: {member.grub_id}</p>
-                <p>Name: {member.name}</p>
-                <p>Total Users: {member.total_users}</p>
-              </div>
-            );
-          })}
-          {/* {members.map((member: Member) => {
-            return (
-              <div key={member.id}>
-                <p>Grub ID: {member.grub_id}</p>
-                <p>Name: {member.name}</p>
-                <p>Total Users: {member.total_users}</p>
-              </div>
-            );
-          })} */}
-        </div>
+        <div></div>
         <Button onClick={() => signOut()}>SignOut</Button>
-        {/* <SignOut /> */}
       </div>
     </div>
   );
