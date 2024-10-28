@@ -10,83 +10,73 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { api } from "@/lib/api";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Head from "next/head";
-import { registerFormSchema, RegisterFormSchema } from "@/lib/formSchema";
+// import Cookies from "js-cookie";
+import { LoginFormSchema, loginFormSchema } from "@/lib/formSchema";
+// import { toast } from "sonner";
+import { signIn } from "next-auth/react";
+import { IoLogoGithub } from "react-icons/io5";
+// import { GithubButton } from "@/components/auth/social-button";
+// import { SignOut } from "@/components/signOut";
 
-export default function Register() {
+export default function Login() {
   const [error, setError] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const router = useRouter();
 
-  const form = useForm<RegisterFormSchema>({
-    resolver: zodResolver(registerFormSchema),
+  const form = useForm<LoginFormSchema>({
+    resolver: zodResolver(loginFormSchema),
     defaultValues: {
-      name: "",
       username: "",
       password: "",
     },
   });
 
-  const { handleSubmit, control } = form;
+  // const { handleSubmit, control } = form;
 
-  const onSubmit = handleSubmit((val) => {
+  const onSubmit = async (data: LoginFormSchema) => {
     setIsLoading(true);
-    api
-      .post("/users", {
-        name: val.name,
-        username: val.username,
-        password: val.password,
-      })
-      .then((response) => {
-        console.log(response.data.data);
-        setIsLoading(false);
-        router.push("/login");
-      })
-      .catch((error) => {
-        setIsLoading(false);
-        setError(error.response.data.errors);
-      });
-  });
+    const response = await signIn("credentials", {
+      redirect: false,
+      ...data,
+    });
+
+    const errors = response?.code as string;
+
+    if (!errors) {
+      setIsLoading(true);
+      router.replace("/dashboard");
+      setIsLoading(false);
+    }
+
+    setError(errors);
+    setIsLoading(false);
+  };
 
   return (
     <main>
-      <Head>
-        <title>Register</title>
-      </Head>
       <div className="flex h-screen ">
         <div className="lg:flex items-center justify-center flex-1 bg-white text-black flex ">
-          <div className="md:w-[30rem] lg:w-[30rem] flex items-center border-2 border-black justify-center shadow-lg rounded-xl mx-5">
+          <div className="md:w-[30rem] lg:w-[30rem] flex items-center border-2 border-black justify-center rounded-xl mx-5">
             <div className="max-w-md w-full p-6">
               <h1 className="text-3xl font-semibold mb-6 text-black text-center">
-                Sign Up
+                Login
               </h1>
               <h1 className="text-sm font-semibold mb-6 text-gray-500 text-center">
                 Join to Our Community with all time access and free
               </h1>
               <Form {...form}>
-                <form onSubmit={onSubmit} className="space-y-4">
+                <form
+                  onSubmit={form.handleSubmit(onSubmit)}
+                  className="space-y-4"
+                >
                   <FormField
-                    control={control}
-                    name="name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Name</FormLabel>
-                        <FormControl>
-                          <Input type="text" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={control}
+                    control={form.control}
                     name="username"
                     render={({ field }) => (
                       <FormItem>
@@ -99,7 +89,7 @@ export default function Register() {
                     )}
                   />
                   <FormField
-                    control={control}
+                    control={form.control}
                     name="password"
                     render={({ field }) => (
                       <FormItem>
@@ -118,16 +108,25 @@ export default function Register() {
                       className="w-full"
                       disabled={isLoading}
                     >
-                      Sing Up
+                      Login
                     </Button>
                   </div>
                 </form>
               </Form>
+              {/* <GithubButton /> */}
+              {/* <Button
+                className="w-full mt-4 bg-zinc-500"
+                type="submit"
+                onClick={() => signIn("github", { redirectTo: "/dashboard" })}
+              >
+                <IoLogoGithub className="mr-3 text-2xl" />
+                Sign In with Github
+              </Button> */}
               <div className="mt-4 text-sm text-gray-600 text-center">
                 <p>
-                  Already have an account?{" "}
-                  <Link className="text-black hover:underline" href="/login">
-                    Login
+                  Dont have an account yet?{" "}
+                  <Link className="text-black hover:underline" href="/register">
+                    Sing Up
                   </Link>
                 </p>
               </div>

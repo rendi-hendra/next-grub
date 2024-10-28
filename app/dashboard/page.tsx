@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import EachUtils from "@/lib/EachUtils";
 import useStore from "@/store/store";
 import { signOut } from "next-auth/react";
 import { useEffect } from "react";
@@ -38,6 +39,8 @@ export default function Dashboard() {
     fetchGrub,
     sayHello,
     getAllMembers,
+    session,
+    // members,
   } = useStore();
   // const { data: session } = useSession();
 
@@ -45,6 +48,8 @@ export default function Dashboard() {
     // Mengambil data saat komponen di-mount
     fetchGrub();
     getAllMembers("fd9e3b09-9835-495d-8794-926afd024bb8");
+
+    // console.log(data);
   }, []);
 
   return (
@@ -60,20 +65,24 @@ export default function Dashboard() {
           Decrease
         </Button>
         <Button onClick={sayHello}>Hello</Button>
-        <p className="my-5 flex justify-center">
-          {data.map((item: Grub) => {
-            return (
-              <div
-                key={item.id}
-                className="border border-solid border-black p-10 mx-5 text-left rounded-lg"
-              >
-                <p>Grub ID: {item.grub_id}</p>
-                <p>Name: {item.name}</p>
-                <p>Total Users: {item.total_users}</p>
-              </div>
-            );
-          })}
-        </p>
+        <div>{session}</div>
+        <div className="my-5 flex justify-center">
+          <EachUtils
+            of={data}
+            render={(item: Grub) => {
+              return (
+                <div
+                  key={item.id}
+                  className="border border-solid border-black p-10 mx-5 text-left rounded-lg"
+                >
+                  <p>Grub ID: {item.grub_id}</p>
+                  <p>Name: {item.name}</p>
+                  <p>Total Users: {item.total_users}</p>
+                </div>
+              );
+            }}
+          />
+        </div>
         <h1 className="mt-10">
           {/* Dashboard {session?.user.name} {session.user.id} count: {count} */}
         </h1>

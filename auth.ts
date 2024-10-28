@@ -1,6 +1,8 @@
 import axios from "axios";
 import NextAuth, { CredentialsSignin } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
+import Github from "next-auth/providers/github";
+// import { api } from "./lib/api";
 
 class InvalidLoginError extends CredentialsSignin {
   constructor(error: string = "Invalid login") {
@@ -15,6 +17,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     signIn: "/login",
   },
   providers: [
+    Github,
     Credentials({
       credentials: {
         username: {},
@@ -33,6 +36,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           );
 
           user = response.data.data;
+
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
           const errors = await error?.response?.data?.errors;
@@ -71,6 +75,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     session({ session, token }) {
       session.user.id = token.sub;
       session.user.token = token.token;
+      // console.log(session);
+
       return session;
     },
   },

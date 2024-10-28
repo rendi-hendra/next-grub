@@ -45,6 +45,8 @@ const useStore = create<Store>((set) => ({
     set((state: { session: string }) => ({
       session: state.session,
     }));
+    // console.log(token);
+
     // set({ session: token.user.token as string})
   },
 
@@ -72,7 +74,10 @@ const useStore = create<Store>((set) => ({
         headers: { Authorization: token },
       });
 
-      set({ members: response.data.data });
+      // console.log(response.data.data);
+      console.log(token);
+
+      set({ members: await response.data.data });
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       set({ errors: error.message });
