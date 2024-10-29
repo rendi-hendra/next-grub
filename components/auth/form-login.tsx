@@ -19,7 +19,7 @@ import { useRouter } from "next/navigation";
 import { LoginFormSchema, loginFormSchema } from "@/lib/formSchema";
 // import { toast } from "sonner";
 import { signIn } from "next-auth/react";
-import { IoLogoGithub } from "react-icons/io5";
+// import { IoLogoGithub } from "react-icons/io5";
 // import { GithubButton } from "@/components/auth/social-button";
 // import { SignOut } from "@/components/signOut";
 

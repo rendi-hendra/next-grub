@@ -45,7 +45,7 @@ const useStore = create<Store>((set) => ({
     set((state: { session: string }) => ({
       session: state.session,
     }));
-    // console.log(token);
+    console.log(token);
 
     // set({ session: token.user.token as string})
   },

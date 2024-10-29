@@ -2,6 +2,7 @@ import axios from "axios";
 import NextAuth, { CredentialsSignin } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import Github from "next-auth/providers/github";
+import { api } from "./lib/api";
 // import { api } from "./lib/api";
 
 class InvalidLoginError extends CredentialsSignin {
@@ -17,7 +18,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     signIn: "/login",
   },
   providers: [
-    Github,
+    Github({
+      clientId: process.env.GITHUB_ID as string,
+      clientSecret: process.env.GITHUB_SECRET as string,
+    }),
     Credentials({
       credentials: {
         username: {},
@@ -67,17 +71,44 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       return true;
     },
 
-    jwt({ token, user }) {
-      if (user) token.token = user.token;
+    jwt({ token, user, account }) {
+      if (user) {
+        token.token = user.token;
+        token.type = account.type;
+      }
+
       return token;
     },
 
     session({ session, token }) {
       session.user.id = token.sub;
       session.user.token = token.token;
-      // console.log(session);
+      session.user.type = token.type;
 
       return session;
+    },
+
+    async signIn({ user, account }) {
+      if (account.type == "oauth") {
+        user.token = account.access_token;
+        user.type = account.type;
+        console.log(user);
+
+        try {
+          await api.post("/users/oauth/login", {
+            user_id: user.id,
+            name: user.name,
+            image: user.image,
+            token: user.token,
+          });
+        } catch (error) {
+          console.log(error);
+        }
+      }
+
+      user.type = account.type;
+
+      return true;
     },
   },
 });

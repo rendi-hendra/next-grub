@@ -2,10 +2,12 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { api } from "@/lib/api";
 import EachUtils from "@/lib/EachUtils";
 import useStore from "@/store/store";
-import { signOut } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { useEffect } from "react";
+// import { useEffect } from "react";
 // import { useSession } from "next-auth/react";
 
 interface Grub {
@@ -15,20 +17,6 @@ interface Grub {
   total_users: number;
 }
 
-// interface Member {
-//   id: number;
-//   grub_id: string;
-//   name: string;
-//   total_users: number;
-//   users?: [
-//     {
-//       id: number;
-//       name: string;
-//       role: string;
-//     }
-//   ];
-// }
-
 export default function Dashboard() {
   const {
     count,
@@ -36,21 +24,28 @@ export default function Dashboard() {
     decrease,
     data,
     hello,
-    fetchGrub,
+    // fetchGrub,
     sayHello,
-    getAllMembers,
-    session,
+    // getAllMembers,
+    // session,
+    // getSession,
     // members,
   } = useStore();
-  // const { data: session } = useSession();
+  const { data: session } = useSession();
 
-  useEffect(() => {
-    // Mengambil data saat komponen di-mount
-    fetchGrub();
-    getAllMembers("fd9e3b09-9835-495d-8794-926afd024bb8");
+  useEffect(() => {}, []);
 
-    // console.log(data);
-  }, []);
+  const logOut = async () => {
+    if (session.user.type == "oauth") {
+      await api.delete("/users/signout/" + session.user.token, {
+        headers: {
+          Authorization: session.user.token,
+        },
+      });
+    }
+
+    await signOut();
+  };
 
   return (
     <div>
@@ -65,7 +60,7 @@ export default function Dashboard() {
           Decrease
         </Button>
         <Button onClick={sayHello}>Hello</Button>
-        <div>{session}</div>
+        <div>{JSON.stringify(session?.user)}</div>
         <div className="my-5 flex justify-center">
           <EachUtils
             of={data}
@@ -89,7 +84,8 @@ export default function Dashboard() {
         {/* <p>{JSON.stringify(session)}</p> */}
         <Input className="w-96 m-auto my-10" />
         <div></div>
-        <Button onClick={() => signOut()}>SignOut</Button>
+        {/* <Button onClick={() => signOut()}>SignOut</Button> */}
+        <Button onClick={logOut}>SignOut</Button>
       </div>
     </div>
   );
