@@ -1,5 +1,6 @@
 "use client";
 
+import { Alert, CreateGrubButton } from "@/components/auth/social-button";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { api } from "@/lib/api";
@@ -7,6 +8,8 @@ import EachUtils from "@/lib/EachUtils";
 import useStore from "@/store/store";
 import { signOut, useSession } from "next-auth/react";
 import { useEffect } from "react";
+import { toast } from "sonner";
+
 // import { useEffect } from "react";
 // import { useSession } from "next-auth/react";
 
@@ -33,7 +36,9 @@ export default function Dashboard() {
   } = useStore();
   const { data: session } = useSession();
 
-  useEffect(() => {}, []);
+  useEffect(() => {
+    toast("Event has been created.");
+  }, []);
 
   const logOut = async () => {
     if (session.user.type == "oauth") {
@@ -83,9 +88,13 @@ export default function Dashboard() {
         </h1>
         {/* <p>{JSON.stringify(session)}</p> */}
         <Input className="w-96 m-auto my-10" />
-        <div></div>
-        {/* <Button onClick={() => signOut()}>SignOut</Button> */}
-        <Button onClick={logOut}>SignOut</Button>
+        <div>
+          <Alert className="mx-5" name="SignOut" click={logOut} />
+          <CreateGrubButton name="Create Grub" />
+          {/* <Button onClick={logOut} className="mx-5">
+            SignOut
+          </Button> */}
+        </div>
       </div>
     </div>
   );

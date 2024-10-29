@@ -17,11 +17,9 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 // import Cookies from "js-cookie";
 import { LoginFormSchema, loginFormSchema } from "@/lib/formSchema";
-// import { toast } from "sonner";
 import { signIn } from "next-auth/react";
-// import { IoLogoGithub } from "react-icons/io5";
-// import { GithubButton } from "@/components/auth/social-button";
-// import { SignOut } from "@/components/signOut";
+import { IoLogoGithub } from "react-icons/io5";
+import { toast } from "sonner";
 
 export default function Login() {
   const [error, setError] = useState<string>("");
@@ -56,6 +54,16 @@ export default function Login() {
 
     setError(errors);
     setIsLoading(false);
+  };
+
+  const login = async () => {
+    await signIn("github", {
+      redirect: false,
+      callbackUrl: "/dashboard",
+    });
+    toast.success("Login Successful", {
+      duration: 5000,
+    });
   };
 
   return (
@@ -113,15 +121,10 @@ export default function Login() {
                   </div>
                 </form>
               </Form>
-              {/* <GithubButton /> */}
-              {/* <Button
-                className="w-full mt-4 bg-zinc-500"
-                type="submit"
-                onClick={() => signIn("github", { redirectTo: "/dashboard" })}
-              >
+              <Button className="w-full mt-4" type="submit" onClick={login}>
                 <IoLogoGithub className="mr-3 text-2xl" />
                 Sign In with Github
-              </Button> */}
+              </Button>
               <div className="mt-4 text-sm text-gray-600 text-center">
                 <p>
                   Dont have an account yet?{" "}
