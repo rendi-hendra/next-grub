@@ -1,5 +1,6 @@
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -21,7 +22,21 @@ import {
 
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
-import { Label } from "../ui/label";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "../ui/form";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { api } from "@/lib/api";
+import { useSession } from "next-auth/react";
+import { toast } from "sonner";
+import useStore from "@/store/store";
 
 export const Alert = ({
   className,
@@ -48,7 +63,12 @@ export const Alert = ({
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={click}>Yes</AlertDialogAction>
+            <AlertDialogAction
+              onClick={click}
+              className="bg-red-400 hover:bg-red-600 hover:text-white"
+            >
+              Yes
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -57,6 +77,45 @@ export const Alert = ({
 };
 
 export const CreateGrubButton = ({ name }: { name: string }) => {
+  const { data: session } = useSession();
+  const { fetchGrub } = useStore();
+
+  const createGrubSchema = z.object({
+    name: z.string().min(4),
+  });
+
+  type CreateGrubSchema = z.infer<typeof createGrubSchema>;
+
+  const form = useForm<CreateGrubSchema>({
+    resolver: zodResolver(createGrubSchema),
+    defaultValues: {
+      name: "",
+    },
+  });
+
+  const onSubmit = async (data: CreateGrubSchema) => {
+    try {
+      await api.post(
+        "/grubs",
+        {
+          name: data.name,
+        },
+        {
+          headers: { Authorization: session.user.token },
+        }
+      );
+
+      toast.success("Grub created successfully", {
+        position: "top-center",
+        duration: 3000,
+      });
+
+      fetchGrub();
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -69,31 +128,111 @@ export const CreateGrubButton = ({ name }: { name: string }) => {
             Make changes to your profile here. Click save when youre done.
           </DialogDescription>
         </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="name" className="text-right">
-              Name
-            </Label>
-            <Input
-              id="name"
-              defaultValue="Pedro Duarte"
-              className="col-span-3"
-            />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="username" className="text-right">
-              Username
-            </Label>
-            <Input
-              id="username"
-              defaultValue="@peduarte"
-              className="col-span-3"
-            />
-          </div>
-        </div>
-        <DialogFooter>
-          <Button type="submit">Save changes</Button>
-        </DialogFooter>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <div className="grid gap-4 py-4">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-right">Name</FormLabel>
+                    <FormControl>
+                      <Input type="text" {...field} className="col-span-3" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <DialogFooter>
+              <DialogClose asChild>
+                <Button type="submit">Save changes</Button>
+              </DialogClose>
+            </DialogFooter>
+          </form>
+        </Form>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+export const JoinGrubButton = ({ name }: { name: string }) => {
+  const { data: session } = useSession();
+  const { fetchGrub } = useStore();
+
+  const createGrubSchema = z.object({
+    name: z.string().min(4),
+  });
+
+  type CreateGrubSchema = z.infer<typeof createGrubSchema>;
+
+  const form = useForm<CreateGrubSchema>({
+    resolver: zodResolver(createGrubSchema),
+    defaultValues: {
+      name: "",
+    },
+  });
+
+  const onSubmit = async (data: CreateGrubSchema) => {
+    try {
+      await api.post(
+        "/grubs",
+        {
+          name: data.name,
+        },
+        {
+          headers: { Authorization: session.user.token },
+        }
+      );
+
+      toast.success("Grub created successfully", {
+        position: "top-center",
+        duration: 3000,
+      });
+
+      fetchGrub();
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button>{name}</Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>{name}</DialogTitle>
+          <DialogDescription>
+            Make changes to your profile here. Click save when youre done.
+          </DialogDescription>
+        </DialogHeader>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <div className="grid gap-4 py-4">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-right">Name</FormLabel>
+                    <FormControl>
+                      <Input type="text" {...field} className="col-span-3" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <DialogFooter>
+              <DialogClose asChild>
+                <Button type="submit">Save changes</Button>
+              </DialogClose>
+            </DialogFooter>
+          </form>
+        </Form>
       </DialogContent>
     </Dialog>
   );

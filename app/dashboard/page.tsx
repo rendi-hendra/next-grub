@@ -2,14 +2,18 @@
 
 import { Alert, CreateGrubButton } from "@/components/auth/social-button";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { api } from "@/lib/api";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+// import { api } from "@/lib/api";
 import EachUtils from "@/lib/EachUtils";
 import useStore from "@/store/store";
 import { signOut, useSession } from "next-auth/react";
 import { useEffect } from "react";
-import { toast } from "sonner";
-
 // import { useEffect } from "react";
 // import { useSession } from "next-auth/react";
 
@@ -21,36 +25,14 @@ interface Grub {
 }
 
 export default function Dashboard() {
-  const {
-    count,
-    increase,
-    decrease,
-    data,
-    hello,
-    // fetchGrub,
-    sayHello,
-    // getAllMembers,
-    // session,
-    // getSession,
-    // members,
-  } = useStore();
+  const { count, increase, decrease, data, hello, fetchGrub, sayHello } =
+    useStore();
   const { data: session } = useSession();
 
   useEffect(() => {
-    toast("Event has been created.");
+    console.log(data);
+    fetchGrub();
   }, []);
-
-  const logOut = async () => {
-    if (session.user.type == "oauth") {
-      await api.delete("/users/signout/" + session.user.token, {
-        headers: {
-          Authorization: session.user.token,
-        },
-      });
-    }
-
-    await signOut();
-  };
 
   return (
     <div>
@@ -65,35 +47,29 @@ export default function Dashboard() {
           Decrease
         </Button>
         <Button onClick={sayHello}>Hello</Button>
+        <Alert className="mx-5" name="SignOut" click={() => signOut()} />
+        <CreateGrubButton name="Create Grub" />
         <div>{JSON.stringify(session?.user)}</div>
-        <div className="my-5 flex justify-center">
-          <EachUtils
-            of={data}
-            render={(item: Grub) => {
-              return (
-                <div
-                  key={item.id}
-                  className="border border-solid border-black p-10 mx-5 text-left rounded-lg"
-                >
-                  <p>Grub ID: {item.grub_id}</p>
-                  <p>Name: {item.name}</p>
-                  <p>Total Users: {item.total_users}</p>
-                </div>
-              );
-            }}
-          />
-        </div>
-        <h1 className="mt-10">
-          {/* Dashboard {session?.user.name} {session.user.id} count: {count} */}
-        </h1>
-        {/* <p>{JSON.stringify(session)}</p> */}
-        <Input className="w-96 m-auto my-10" />
-        <div>
-          <Alert className="mx-5" name="SignOut" click={logOut} />
-          <CreateGrubButton name="Create Grub" />
-          {/* <Button onClick={logOut} className="mx-5">
-            SignOut
-          </Button> */}
+        <div className="h-[500px] flex justify-center items-center">
+          <div className="flex gap-4">
+            <EachUtils
+              of={data}
+              render={(item: Grub) => {
+                return (
+                  <Card className="w-[350px]">
+                    <CardHeader>
+                      <CardTitle>{item.name}</CardTitle>
+                      <CardDescription>{item.grub_id}</CardDescription>
+                    </CardHeader>
+                    <CardContent className="">
+                      <p>Name: {item.name}</p>
+                      <p>Total Users: {item.total_users}</p>
+                    </CardContent>
+                  </Card>
+                );
+              }}
+            />
+          </div>
         </div>
       </div>
     </div>

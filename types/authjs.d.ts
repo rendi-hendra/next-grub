@@ -12,6 +12,7 @@ declare module "next-auth" {
     role: string;
     token: string;
     type: string;
+    exp: number;
   }
 }
 

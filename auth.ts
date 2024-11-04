@@ -18,10 +18,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     signIn: "/login",
   },
   providers: [
-    Github({
-      clientId: process.env.GITHUB_ID as string,
-      clientSecret: process.env.GITHUB_SECRET as string,
-    }),
+    Github,
     Credentials({
       credentials: {
         username: {},
@@ -75,8 +72,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (user) {
         token.token = user.token;
         token.type = account.type;
+        token.exp = account.expires_in;
+        user.exp = account.expires_in;
+        // console.log({ token });
+        // console.log({ user });
+        // console.log({ account });
       }
-
       return token;
     },
 
@@ -90,17 +91,42 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
     async signIn({ user, account }) {
       if (account.type == "oauth") {
-        user.token = account.access_token;
-        user.type = account.type;
-        console.log(user);
+        // user.token = account.access_token;
+        // user.type = account.type;
+        // console.log({ account });
 
         try {
-          await api.post("/users/oauth/login", {
+          const res = await api.post("/users/oauth/login", {
             user_id: user.id,
             name: user.name,
             image: user.image,
             token: user.token,
+            email: user.email,
           });
+
+          const csrfToken = await axios.get(
+            "http://localhost:3000/api/auth/csrf"
+          );
+
+          const signin = await axios.post(
+            "https://github.com/login/oauth/access_token",
+            {},
+            {
+              params: {
+                client_id: process.env.AUTH_GITHUB_ID,
+                client_secret: process.env.AUTH_GITHUB_SECRET,
+                code: "123",
+              },
+            }
+          );
+
+          const token = res.data.data.token;
+
+          user.token = token;
+          user.type = account.type;
+
+          console.log(signin.data);
+          console.log(csrfToken.data);
         } catch (error) {
           console.log(error);
         }
