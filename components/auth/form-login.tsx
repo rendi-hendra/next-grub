@@ -18,7 +18,7 @@ import { useRouter } from "next/navigation";
 // import Cookies from "js-cookie";
 import { LoginFormSchema, loginFormSchema } from "@/lib/formSchema";
 import { signIn } from "next-auth/react";
-import { IoLogoGithub } from "react-icons/io5";
+import { IoLogoGithub, IoLogoTwitter } from "react-icons/io5";
 import { toast } from "sonner";
 
 export default function Login() {
@@ -56,15 +56,15 @@ export default function Login() {
     setIsLoading(false);
   };
 
-  const login = async () => {
-    await signIn("github", {
-      redirect: false,
-      callbackUrl: "/dashboard",
-    });
-    toast.success("Login Successful", {
-      duration: 5000,
-    });
-  };
+  // const login = async () => {
+  //   await signIn("github", {
+  //     redirect: false,
+  //     callbackUrl: "/dashboard",
+  //   });
+  //   toast.success("Login Successful", {
+  //     duration: 5000,
+  //   });
+  // };
 
   return (
     <main>
@@ -121,9 +121,29 @@ export default function Login() {
                   </div>
                 </form>
               </Form>
-              <Button className="w-full mt-4" type="submit" onClick={login}>
+              <Button
+                className="w-full mt-4"
+                type="submit"
+                onClick={() =>
+                  signIn("github", { redirectTo: "/dashboard" }).then(() =>
+                    toast.success("Login Successful", { duration: 5000 })
+                  )
+                }
+              >
                 <IoLogoGithub className="mr-3 text-2xl" />
                 Sign In with Github
+              </Button>
+              <Button
+                className="w-full mt-4"
+                type="submit"
+                onClick={() =>
+                  signIn("twitter", { redirectTo: "/dashboard" }).then(() =>
+                    toast.success("Login Successful", { duration: 5000 })
+                  )
+                }
+              >
+                <IoLogoTwitter className="mr-3 text-2xl" />
+                Sign In with Twitter
               </Button>
               <div className="mt-4 text-sm text-gray-600 text-center">
                 <p>

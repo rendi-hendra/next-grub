@@ -2,8 +2,8 @@ import axios from "axios";
 import NextAuth, { CredentialsSignin } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import Github from "next-auth/providers/github";
+import Twitter from "next-auth/providers/twitter";
 import { api } from "./lib/api";
-// import { api } from "./lib/api";
 
 class InvalidLoginError extends CredentialsSignin {
   constructor(error: string = "Invalid login") {
@@ -19,6 +19,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   },
   providers: [
     Github,
+    Twitter,
     Credentials({
       credentials: {
         username: {},
@@ -91,9 +92,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
     async signIn({ user, account }) {
       if (account.type == "oauth") {
-        // user.token = account.access_token;
-        // user.type = account.type;
-        // console.log({ account });
+        user.token = account.access_token;
+        user.type = account.type;
+        console.log({ account });
 
         try {
           const res = await api.post("/users/oauth/login", {
@@ -101,32 +102,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             name: user.name,
             image: user.image,
             token: user.token,
-            email: user.email,
+            email: user?.email || "null",
           });
 
-          const csrfToken = await axios.get(
-            "http://localhost:3000/api/auth/csrf"
-          );
-
-          const signin = await axios.post(
-            "https://github.com/login/oauth/access_token",
-            {},
-            {
-              params: {
-                client_id: process.env.AUTH_GITHUB_ID,
-                client_secret: process.env.AUTH_GITHUB_SECRET,
-                code: "123",
-              },
-            }
-          );
-
           const token = res.data.data.token;
-
           user.token = token;
           user.type = account.type;
 
-          console.log(signin.data);
-          console.log(csrfToken.data);
+          console.log(res.data.data);
         } catch (error) {
           console.log(error);
         }
